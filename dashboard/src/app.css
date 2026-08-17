@@ -1,0 +1,96 @@
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+	--bg:          #0a0f1a;
+	--bg-surface:  #0f172a;
+	--bg-raised:   #1e293b;
+	--border:      #334155;
+	--border-muted:#1e293b;
+	--text:        #e2e8f0;
+	--text-muted:  #94a3b8;
+	--text-dim:    #64748b;
+	--accent:      #3b82f6;
+	--accent-soft: rgba(59,130,246,0.15);
+	--accent-hover:#60a5fa;
+	--danger:      #f87171;
+	--purple:      #7c5cd8;
+	--nav-height:  52px;
+
+	font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+	font-size: 15px;
+	line-height: 1.6;
+	color: var(--text);
+	background: var(--bg);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+	background: var(--bg);
+	color: var(--text);
+}
+
+/* ── Top Nav ───────────────────────────────────────────────── */
+.app-nav {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	height: var(--nav-height);
+	background: var(--bg-surface);
+	border-bottom: 1px solid var(--border);
+	display: flex;
+	align-items: center;
+	padding: 0 1.5rem;
+	gap: 1.5rem;
+}
+
+.app-nav .nav-brand {
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: var(--text);
+	text-decoration: none;
+	letter-spacing: 0.01em;
+	margin-right: auto;
+}
+
+.app-nav a {
+	font-size: 0.875rem;
+	color: var(--text-muted);
+	text-decoration: none;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	transition: color 0.15s, background 0.15s;
+}
+
+.app-nav a:hover {
+	color: var(--text);
+	background: var(--bg-raised);
+}
+
+.app-nav a.active {
+	color: var(--accent-hover);
+	background: var(--accent-soft);
+}
+
+/* ── App content wrapper ───────────────────────────────────── */
+.app-body {
+	min-height: calc(100vh - var(--nav-height));
+}
+
+/* ── Scrollbar (webkit) ────────────────────────────────────── */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+::-webkit-scrollbar-track {
+	background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 3px;
+}

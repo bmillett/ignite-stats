@@ -1,0 +1,543 @@
+<script>
+	import { onMount } from 'svelte';
+	import { Bar, Line } from 'svelte-chartjs';
+	import {
+		Chart,
+		CategoryScale,
+		LinearScale,
+		BarElement,
+		PointElement,
+		LineElement,
+		Title,
+		Tooltip,
+		Legend,
+		Filler
+	} from 'chart.js';
+	import { loadAllStats } from '$lib/data.js';
+	import { statsStore, selectedTournaments } from '$lib/stores.js';
+
+	Chart.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+
+	const EFF_HIGH = 90;
+	const EFF_MID = 80;
+
+	let loading = $state(true);
+	let stats = $state(null);
+
+	// Reactive: list of all tournament names
+	let allTournaments = $state([]);
+	let selected = $state([]);
+
+	onMount(async () => {
+		const data = await loadAllStats();
+		statsStore.set(data);
+		stats = data;
+		allTournaments = Object.keys(data.tournaments);
+		selected = [...allTournaments];
+		selectedTournaments.set(selected);
+		loading = false;
+	});
+
+	function toggleTournament(name) {
+		if (selected.includes(name)) {
+			selected = selected.filter((t) => t !== name);
+		} else {
+			selected = [...selected, name];
+		}
+		selectedTournaments.set(selected);
+	}
+
+	function selectAll() {
+		selected = [...allTournaments];
+		selectedTournaments.set(selected);
+	}
+
+	// Filtered games across selected tournaments, sorted by date ascending
+	function getFilteredGames(statsData, sel) {
+		if (!statsData) return [];
+		const games = [];
+		for (const t of sel) {
+			const tourney = statsData.tournaments[t];
+			if (tourney) games.push(...tourney.games);
+		}
+		games.sort((a, b) => a.date - b.date);
+		return games;
+	}
+
+	// Team totals for a single game row
+	function gameTeamTotals(game) {
+		let touches = 0;
+		let turnovers = 0;
+		let throwDistYards = 0;
+		for (const p of game.players) {
+			touches += p['Touches'] || 0;
+			turnovers += p['Turnovers'] ?? 0;
+			throwDistYards += p.throwDistanceYards || 0;
+		}
+		const efficiency = touches > 0 ? (1 - turnovers / touches) * 100 : null;
+		return { touches, turnovers, throwDistYards, efficiency };
+	}
+
+	// Build bar chart data (touches vs turnovers) from filtered games
+	function buildChartData(games) {
+		const labels = games.map((g) => {
+			const label = `vs ${g.opponent}`;
+			return selected.length > 1 ? `${g.tournament} — ${label}` : label;
+		});
+
+		const touchesData = [];
+		const turnoversData = [];
+		for (const g of games) {
+			const totals = gameTeamTotals(g);
+			touchesData.push(totals.touches);
+			turnoversData.push(totals.turnovers);
+		}
+
+		return {
+			labels,
+			datasets: [
+				{
+					label: 'Touches',
+					data: touchesData,
+					backgroundColor: '#3b82f6'
+				},
+				{
+					label: 'Turnovers',
+					data: turnoversData,
+					backgroundColor: '#f97316'
+				}
+			]
+		};
+	}
+
+	// Build line chart data (team efficiency %) from filtered games
+	function buildEffChartData(games) {
+		const labels = games.map((g) =>
+			selected.length > 1 ? `${g.tournament} — vs ${g.opponent}` : `vs ${g.opponent}`
+		);
+		const effData = games.map((g) => {
+			const { efficiency } = gameTeamTotals(g);
+			return efficiency !== null ? +efficiency.toFixed(2) : null;
+		});
+		return {
+			labels,
+			datasets: [
+				{
+					label: 'Team Efficiency %',
+					data: effData,
+					borderColor: '#34d399',
+					backgroundColor: 'rgba(52,211,153,0.15)',
+					pointBackgroundColor: effData.map((v) =>
+						v === null ? '#475569' : v < EFF_MID ? '#f97316' : v < EFF_HIGH ? '#eab308' : '#34d399'
+					),
+					pointRadius: 5,
+					tension: 0.3,
+					fill: true,
+					spanGaps: true
+				}
+			]
+		};
+	}
+
+	const chartOptions = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: {
+				labels: {
+					color: '#e2e8f0'
+				}
+			}
+		},
+		scales: {
+			x: {
+				ticks: { color: '#94a3b8' },
+				grid: { color: 'rgba(255,255,255,0.1)' }
+			},
+			y: {
+				ticks: { color: '#94a3b8' },
+				grid: { color: 'rgba(255,255,255,0.1)' }
+			}
+		}
+	};
+
+	const effChartOptions = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: { labels: { color: '#e2e8f0' } },
+			tooltip: {
+				callbacks: {
+					label: (ctx) => ctx.parsed.y !== null ? ` ${ctx.parsed.y.toFixed(1)}%` : ' —'
+				}
+			}
+		},
+		scales: {
+			x: {
+				ticks: { color: '#94a3b8' },
+				grid: { color: 'rgba(255,255,255,0.1)' }
+			},
+			y: {
+				min: 0,
+				max: 100,
+				ticks: { color: '#94a3b8', callback: (v) => v + '%' },
+				grid: { color: 'rgba(255,255,255,0.1)' }
+			}
+		}
+	};
+
+	let filteredGames = $derived(getFilteredGames(stats, selected));
+	let chartData = $derived(buildChartData(filteredGames));
+	let effChartData = $derived(buildEffChartData(filteredGames));
+
+	// Tournament-wide summary totals across all filtered games
+	let summary = $derived.by(() => {
+		let touches = 0, turnovers = 0, throwDistYards = 0, games = filteredGames.length;
+		for (const g of filteredGames) {
+			const t = gameTeamTotals(g);
+			touches += t.touches;
+			turnovers += t.turnovers;
+			throwDistYards += t.throwDistYards;
+		}
+		const efficiency = touches > 0 ? (1 - turnovers / touches) * 100 : null;
+		return { games, touches, turnovers, throwDistYards, efficiency };
+	});
+	let selectorLabel = $derived(
+		selected.length === allTournaments.length && allTournaments.length > 0
+			? 'Combined'
+			: selected.join(', ') || 'None'
+	);
+</script>
+
+<svelte:head>
+	<title>Tournament Overview</title>
+</svelte:head>
+
+<div class="page">
+	<header>
+		<h1>Tournament Overview</h1>
+		<nav>
+			<a href="/leaderboard">View Leaderboard →</a>
+		</nav>
+	</header>
+
+	{#if loading}
+		<p class="loading">Loading stats…</p>
+	{:else}
+		<!-- Tournament Selector -->
+		<section class="selector">
+			<span class="selector-label">Showing: <strong>{selectorLabel}</strong></span>
+			<div class="pills">
+				{#each allTournaments as t}
+					<button
+						class="pill"
+						class:active={selected.includes(t)}
+						onclick={() => toggleTournament(t)}
+					>
+						{t}
+					</button>
+				{/each}
+				{#if allTournaments.length > 1}
+					<button class="pill pill-all" onclick={selectAll}>All</button>
+				{/if}
+			</div>
+		</section>
+
+		<!-- Summary stat cards -->
+		<section class="cards">
+			<div class="card">
+				<span class="card-label">Games</span>
+				<span class="card-value">{summary.games}</span>
+			</div>
+			<div class="card">
+				<span class="card-label">Total Touches</span>
+				<span class="card-value accent">{summary.touches}</span>
+			</div>
+			<div class="card">
+				<span class="card-label">Total Turnovers</span>
+				<span class="card-value high-to">{summary.turnovers}</span>
+			</div>
+			<div class="card">
+				<span class="card-label">Efficiency</span>
+				<span class="card-value"
+					class:good-eff={summary.efficiency !== null && summary.efficiency >= EFF_HIGH}
+					class:mid-eff={summary.efficiency !== null && summary.efficiency >= EFF_MID && summary.efficiency < EFF_HIGH}
+					class:low-eff={summary.efficiency !== null && summary.efficiency < EFF_MID}
+				>{summary.efficiency !== null ? summary.efficiency.toFixed(1) + '%' : '—'}</span>
+			</div>
+			<div class="card">
+				<span class="card-label">Throw Distance</span>
+				<span class="card-value">{summary.throwDistYards.toFixed(0)} <small>yds</small></span>
+			</div>
+		</section>
+
+		<!-- Touches vs Turnovers bar chart -->
+		<section class="chart-section">
+			<h2>Touches vs Turnovers per Game</h2>
+			<div class="chart-wrapper">
+				<Bar data={chartData} options={chartOptions} />
+			</div>
+		</section>
+
+		<!-- Team efficiency line chart -->
+		<section class="chart-section">
+			<h2>Team Efficiency per Game</h2>
+			<div class="chart-wrapper">
+				<Line data={effChartData} options={effChartOptions} />
+			</div>
+		</section>
+
+		<!-- Game Results Table -->
+		<section class="table-section">
+			<h2>Game Results</h2>
+			{#if filteredGames.length === 0}
+				<p class="empty">No games for the selected tournament(s).</p>
+			{:else}
+				<div class="table-scroll">
+					<table>
+						<thead>
+							<tr>
+								<th>Tournament</th>
+								<th>Opponent</th>
+								<th>Date</th>
+								<th>Team Touches</th>
+								<th>Team Turnovers</th>
+								<th>Efficiency</th>
+								<th>Throw Distance (yds)</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each filteredGames as game}
+								{@const totals = gameTeamTotals(game)}
+								<tr>
+									<td>{game.tournament}</td>
+									<td>vs {game.opponent}</td>
+									<td>{game.dateStr}</td>
+									<td>{totals.touches}</td>
+									<td>{totals.turnovers}</td>
+									<td class="efficiency"
+										class:mid-eff={totals.efficiency !== null && totals.efficiency >= EFF_MID && totals.efficiency < EFF_HIGH}
+										class:low-eff={totals.efficiency !== null && totals.efficiency < EFF_MID}
+									>{totals.efficiency !== null ? totals.efficiency.toFixed(1) + '%' : '—'}</td>
+									<td>{totals.throwDistYards.toFixed(1)} yds</td>
+								</tr>
+							{/each}
+						</tbody>
+						<tfoot>
+							<tr class="totals-row">
+								<td colspan="3">Total ({summary.games} games)</td>
+								<td>{summary.touches}</td>
+								<td>{summary.turnovers}</td>
+								<td class="efficiency"
+									class:good-eff={summary.efficiency !== null && summary.efficiency >= EFF_HIGH}
+									class:mid-eff={summary.efficiency !== null && summary.efficiency >= EFF_MID && summary.efficiency < EFF_HIGH}
+									class:low-eff={summary.efficiency !== null && summary.efficiency < EFF_MID}
+								>{summary.efficiency !== null ? summary.efficiency.toFixed(1) + '%' : '—'}</td>
+								<td>{summary.throwDistYards.toFixed(1)} yds</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			{/if}
+		</section>
+	{/if}
+</div>
+
+<style>
+	.page {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 1.5rem 1rem;
+		font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+		color: #e2e8f0;
+	}
+
+	header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 1.5rem;
+	}
+
+	header h1 {
+		margin: 0;
+		font-size: 1.6rem;
+	}
+
+	nav a {
+		color: #3b82f6;
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+
+	nav a:hover {
+		text-decoration: underline;
+	}
+
+	.loading {
+		color: #94a3b8;
+		font-style: italic;
+	}
+
+	.selector {
+		margin-bottom: 1.5rem;
+	}
+
+	.selector-label {
+		font-size: 0.9rem;
+		color: #94a3b8;
+		display: block;
+		margin-bottom: 0.5rem;
+	}
+
+	.pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.pill {
+		padding: 0.3rem 0.8rem;
+		border-radius: 999px;
+		border: 1px solid #475569;
+		background: transparent;
+		color: #94a3b8;
+		font-size: 0.85rem;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s, border-color 0.15s;
+	}
+
+	.pill:hover {
+		border-color: #3b82f6;
+		color: #e2e8f0;
+	}
+
+	.pill.active {
+		background: #3b82f6;
+		border-color: #3b82f6;
+		color: #fff;
+	}
+
+	.pill-all {
+		border-color: #7c5cd8;
+		color: #7c5cd8;
+	}
+
+	.pill-all:hover {
+		background: #7c5cd8;
+		color: #fff;
+	}
+
+	.chart-section,
+	.table-section {
+		margin-bottom: 2rem;
+	}
+
+	h2 {
+		font-size: 1.1rem;
+		margin: 0 0 0.75rem;
+		color: #cbd5e1;
+	}
+
+	.chart-wrapper {
+		height: 320px;
+		background: transparent;
+	}
+
+	.table-scroll {
+		overflow-x: auto;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.9rem;
+	}
+
+	thead th {
+		background: #1e293b;
+		color: #94a3b8;
+		text-align: left;
+		padding: 0.5rem 0.75rem;
+		font-weight: 600;
+		white-space: nowrap;
+		border-bottom: 1px solid #334155;
+	}
+
+	tbody tr:nth-child(even) {
+		background: #0f172a;
+	}
+
+	tbody tr:hover {
+		background: #1e293b;
+	}
+
+	tbody td {
+		padding: 0.45rem 0.75rem;
+		border-bottom: 1px solid #1e293b;
+		white-space: nowrap;
+	}
+
+	.empty {
+		color: #94a3b8;
+		font-style: italic;
+	}
+
+	/* Summary cards */
+	.cards {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-bottom: 2rem;
+	}
+
+	.card {
+		background: #1e293b;
+		border: 1px solid #334155;
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+		min-width: 110px;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.card-label {
+		font-size: 0.72rem;
+		color: #94a3b8;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.card-value {
+		font-size: 1.4rem;
+		font-weight: 700;
+		color: #e2e8f0;
+	}
+
+	.card-value small {
+		font-size: 0.75rem;
+		font-weight: 400;
+		color: #94a3b8;
+	}
+
+	/* Totals footer row */
+	tfoot .totals-row td {
+		padding: 0.5rem 0.75rem;
+		border-top: 2px solid #334155;
+		font-weight: 700;
+		color: #e2e8f0;
+		white-space: nowrap;
+		background: #1e293b;
+	}
+
+	/* Efficiency colours */
+	td.efficiency { font-weight: 600; color: #34d399; }
+	td.efficiency.mid-eff { color: #eab308; }
+	td.efficiency.low-eff { color: #f97316; }
+	.good-eff { color: #34d399; }
+	.mid-eff { color: #eab308; }
+	.low-eff { color: #f97316; }
+	.accent { color: #60a5fa; font-weight: 600; }
+	.high-to { color: #f87171; font-weight: 600; }
+</style>
