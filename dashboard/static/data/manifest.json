@@ -9,6 +9,15 @@
       "Player Stats vs. Titane 2026-08-11_08-30-00.csv",
       "Player Stats vs. Toba 2026-08-12_10-30-00.csv",
       "Player Stats vs. Toro 2026-08-11_12-30-00.csv"
+    ],
+    "pointsFiles": [
+      "Points vs. Dyno 2026-08-12_13-30-00.csv",
+      "Points vs. Fringant 2026-08-10_10-26-31.csv",
+      "Points vs. Helios 2026-08-10_16-30-00.csv",
+      "Points vs. Nitro 2026-08-10_12-30-00.csv",
+      "Points vs. Titane 2026-08-11_08-30-00.csv",
+      "Points vs. Toba 2026-08-12_10-30-00.csv",
+      "Points vs. Toro 2026-08-11_12-30-00.csv"
     ]
   },
   {
@@ -18,7 +27,8 @@
       "Player Stats vs. Titane  2 2026-07-25_14-13-41.csv",
       "Player Stats vs. Toba 2026-07-25_15-12-10.csv",
       "Player Stats vs. Toro  ojcup 2026-07-26_08-06-00.csv"
-    ]
+    ],
+    "pointsFiles": []
   },
   {
     "tournament": "Regionals",
@@ -26,7 +36,14 @@
       "Player Stats vs. Chain reaction 2026-07-11_14-30-00.csv",
       "Player Stats vs. Shockwave 2026-07-11_10-50-00.csv",
       "Player Stats vs. Toro 2026-07-12_14-00-00.csv",
+      "Player Stats vs. Uproar 2026-07-11_16-22-06 (1).csv",
       "Player Stats vs. Uproar 2026-07-11_16-22-06.csv"
+    ],
+    "pointsFiles": [
+      "Points vs. Chain reaction 2026-07-11_14-30-00.csv",
+      "Points vs. Shockwave 2026-07-11_10-50-00.csv",
+      "Points vs. Toro 2026-07-12_14-00-00.csv",
+      "Points vs. Uproar 2026-07-11_16-22-06.csv"
     ]
   }
 ]

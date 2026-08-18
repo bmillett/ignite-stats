@@ -11,4 +11,34 @@ Port 5177 is in use, trying another one...
   [32m[1mVITE[22m v8.2.1[39m  [2mready in [0m[1m687[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5178[22m/[39m
-[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m  [32m➜[39m  [1mNetwork[22node:intnode:internal/fs/watchers:321
+    const error = new UVException({
+         node:internal/fs/watchers:321
+    const error = new UVException({
+                  ^
+
+Error: EBUSY: resource busy or locked, watch 'D:\stats\dashboard\static\data\nationals\Points vs. Dyno 2026-08-12_13-30-00.csv'
+    at FSWatcher.<computed> (node:internal/fs/watchers:321:19)
+    at Object.watch (node:fs:2548:36)
+    at createFsWatchInstance (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9408:16)
+    at setFsWatchListener (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9450:14)
+    at NodeFsHandler._watchWithNodeFs (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9565:20)
+    at NodeFsHandler._handleFile (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9609:24)
+    at NodeFsHandler._addToNodeFs (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9783:26)
+Emitted 'error' event on FSWatcher instance at:
+    at FSWatcher._handleError (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:10582:146)
+    at NodeFsHandler._addToNodeFs (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9788:18) {
+  errno: -4082,
+  syscall: 'watch',
+  code: 'EBUSY',
+  path: 'D:\\stats\\dashboard\\static\\data\\nationals\\Points vs. Dyno 2026-08-12_13-30-00.csv',
+  filename: 'D:\\sta
+Node.js v24.18.0
+4.18.0
+\nationals\\Po
+Node.js
+Node.js v24.18.0
+0-00.csv'
+}
+
+Node.js v24.18.0

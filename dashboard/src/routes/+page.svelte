@@ -202,6 +202,33 @@
 		const efficiency = touches > 0 ? (1 - turnovers / touches) * 100 : null;
 		return { games, touches, turnovers, throwDistYards, efficiency };
 	});
+
+	// Aggregate performance (holds/breaks) across selected tournaments
+	let perfSummary = $derived.by(() => {
+		const agg = {
+			holds: 0, cleanHolds: 0, holdOpportunities: 0,
+			breaks: 0, cleanBreaks: 0, breakOpportunities: 0,
+			totalTurnovers: 0, totalPoints: 0
+		};
+		if (!stats) return agg;
+		for (const t of selected) {
+			const p = stats.tournaments[t]?.performance;
+			if (!p) continue;
+			agg.holds             += p.holds;
+			agg.cleanHolds        += p.cleanHolds;
+			agg.holdOpportunities += p.holdOpportunities;
+			agg.breaks            += p.breaks;
+			agg.cleanBreaks       += p.cleanBreaks;
+			agg.breakOpportunities+= p.breakOpportunities;
+			agg.totalTurnovers    += p.totalTurnovers;
+			agg.totalPoints       += p.totalPoints;
+		}
+		agg.turnoversPerPoint = agg.totalPoints > 0 ? agg.totalTurnovers / agg.totalPoints : 0;
+		agg.holdPct  = agg.holdOpportunities  > 0 ? (agg.holds  / agg.holdOpportunities)  * 100 : null;
+		agg.breakPct = agg.breakOpportunities > 0 ? (agg.breaks / agg.breakOpportunities) * 100 : null;
+		agg.hasData = agg.totalPoints > 0;
+		return agg;
+	});
 	let selectorLabel = $derived(
 		selected.length === allTournaments.length && allTournaments.length > 0
 			? 'Combined'
@@ -270,6 +297,60 @@
 				<span class="card-value">{summary.throwDistYards.toFixed(0)} <small>yds</small></span>
 			</div>
 		</section>
+
+		{#if perfSummary.hasData}
+		<!-- Performance cards -->
+		<section class="perf-cards">
+			<div class="perf-group">
+				<h3>Holds <small>({perfSummary.holdOpportunities} opp.)</small></h3>
+				<div class="cards">
+					<div class="card">
+						<span class="card-label">Holds</span>
+						<span class="card-value accent">{perfSummary.holds}</span>
+					</div>
+					<div class="card">
+						<span class="card-label">Hold %</span>
+						<span class="card-value">{perfSummary.holdPct !== null ? perfSummary.holdPct.toFixed(1) + '%' : '—'}</span>
+					</div>
+					<div class="card">
+						<span class="card-label">Clean Holds</span>
+						<span class="card-value good-eff">{perfSummary.cleanHolds}</span>
+					</div>
+				</div>
+			</div>
+			<div class="perf-group">
+				<h3>Breaks <small>({perfSummary.breakOpportunities} opp.)</small></h3>
+				<div class="cards">
+					<div class="card">
+						<span class="card-label">Breaks</span>
+						<span class="card-value accent">{perfSummary.breaks}</span>
+					</div>
+					<div class="card">
+						<span class="card-label">Break %</span>
+						<span class="card-value">{perfSummary.breakPct !== null ? perfSummary.breakPct.toFixed(1) + '%' : '—'}</span>
+					</div>
+					<div class="card">
+						<span class="card-label">Clean Breaks</span>
+						<span class="card-value good-eff">{perfSummary.cleanBreaks}</span>
+					</div>
+				</div>
+			</div>
+			<div class="perf-group">
+				<h3>Turnovers</h3>
+				<div class="cards">
+					<div class="card">
+						<span class="card-label">Total</span>
+						<span class="card-value high-to">{perfSummary.totalTurnovers}</span>
+					</div>
+					<div class="card">
+						<span class="card-label">Per Point</span>
+						<span class="card-value">{perfSummary.turnoversPerPoint.toFixed(2)}</span>
+					</div>
+				</div>
+			</div>
+			<a class="perf-link" href="/performance">Full performance breakdown →</a>
+		</section>
+		{/if}
 
 		<!-- Touches vs Turnovers bar chart -->
 		<section class="chart-section">
@@ -540,4 +621,39 @@
 	.low-eff { color: #f97316; }
 	.accent { color: #60a5fa; font-weight: 600; }
 	.high-to { color: #f87171; font-weight: 600; }
+
+	/* Performance groups */
+	.perf-cards {
+		margin-bottom: 2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.perf-group h3 {
+		font-size: 0.85rem;
+		color: #94a3b8;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		margin: 0 0 0.5rem;
+		font-weight: 600;
+	}
+
+	.perf-group h3 small {
+		font-size: 0.75rem;
+		font-weight: 400;
+		text-transform: none;
+		letter-spacing: 0;
+		color: #64748b;
+	}
+
+	.perf-link {
+		font-size: 0.88rem;
+		color: #3b82f6;
+		text-decoration: none;
+		margin-top: 0.25rem;
+		display: inline-block;
+	}
+
+	.perf-link:hover { text-decoration: underline; }
 </style>

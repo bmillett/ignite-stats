@@ -23,13 +23,16 @@ for (const entry of readdirSync(dataDir)) {
 	const entryPath = join(dataDir, entry);
 	if (!statSync(entryPath).isDirectory()) continue;
 
-	const csvFiles = readdirSync(entryPath)
+	const allCsvFiles = readdirSync(entryPath)
 		.filter((f) => f.endsWith('.csv'))
 		.sort(); // deterministic order
 
-	if (csvFiles.length === 0) continue;
+	const playerFiles = allCsvFiles.filter((f) => f.startsWith('Player Stats'));
+	const pointsFiles = allCsvFiles.filter((f) => f.startsWith('Points vs.'));
 
-	entries.push({ tournament: entry, files: csvFiles });
+	if (playerFiles.length === 0) continue;
+
+	entries.push({ tournament: entry, files: playerFiles, pointsFiles });
 }
 
 // Sort tournaments alphabetically for a stable output

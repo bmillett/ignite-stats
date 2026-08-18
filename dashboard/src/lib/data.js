@@ -1,13 +1,51 @@
 import Papa from 'papaparse';
 
 // Filename pattern: "Player Stats vs. {Opponent} {YYYY-MM-DD}_{HH-MM-SS}.csv"
-const FILE_PATTERN = /^Player Stats vs\. (.+?) (\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.csv$/;
+const FILE_PATTERN = /^(?:Player Stats|Points) vs\. (.+?) (\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.csv$/;
 
 function parseFilename(filename) {
 	const m = FILE_PATTERN.exec(filename);
 	if (!m) return { opponent: filename, date: new Date(0), dateStr: '' };
 	const [, opponent, dateStr] = m;
 	return { opponent, date: new Date(dateStr), dateStr };
+}
+
+// Derive hold/break performance metrics from an array of point rows.
+function deriveGamePerformance(pointRows) {
+	let holds = 0, cleanHolds = 0, holdOpportunities = 0;
+	let breaks = 0, cleanBreaks = 0, breakOpportunities = 0;
+	let totalTurnovers = 0, totalPoints = pointRows.length;
+
+	for (const row of pointRows) {
+		const onOffense = row['Started on offense?'] === 1;
+		const scored    = row['Scored?'] === 1;
+		const tos       = row['Turnovers'] || 0;
+		totalTurnovers += tos;
+
+		if (onOffense) {
+			holdOpportunities++;
+			if (scored) {
+				holds++;
+				if (tos === 0) cleanHolds++;
+			}
+		} else {
+			breakOpportunities++;
+			if (scored) {
+				breaks++;
+				if (tos === 0) cleanBreaks++;
+			}
+		}
+	}
+
+	return {
+		holds, cleanHolds, holdOpportunities,
+		breaks, cleanBreaks, breakOpportunities,
+		totalTurnovers, totalPoints,
+		turnoversPerPoint: totalPoints > 0 ? totalTurnovers / totalPoints : 0,
+		holdPct: holdOpportunities > 0 ? (holds / holdOpportunities) * 100 : null,
+		breakPct: breakOpportunities > 0 ? (breaks / breakOpportunities) * 100 : null,
+		points: pointRows  // keep raw rows for drill-down
+	};
 }
 
 function parsePlayerName(raw) {
@@ -82,6 +120,13 @@ function finalisePlayerAggregates(players) {
 	}
 }
 
+async function fetchCsv(url) {
+	const res = await fetch(url);
+	if (!res.ok) { console.warn(`Failed to fetch ${url}`); return null; }
+	const text = await res.text();
+	return Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true }).data;
+}
+
 export async function loadAllStats() {
 	const manifestRes = await fetch('/data/manifest.json');
 	if (!manifestRes.ok) throw new Error('Failed to load manifest.json');
@@ -90,30 +135,30 @@ export async function loadAllStats() {
 	const tournaments = {};
 
 	for (const entry of manifest) {
-		const { tournament, files } = entry;
+		const { tournament, files, pointsFiles = [] } = entry;
 		const games = [];
 		const players = {};
+
+		// Build a lookup: opponent+dateStr -> points performance, keyed by dateStr
+		const performanceByDateStr = {};
+		for (const filename of pointsFiles) {
+			const { opponent, dateStr } = parseFilename(filename);
+			const url = `/data/${tournament}/${encodeURIComponent(filename)}`;
+			const rows = await fetchCsv(url);
+			if (rows) performanceByDateStr[dateStr] = { opponent, ...deriveGamePerformance(rows) };
+		}
 
 		for (const filename of files) {
 			const { opponent, date, dateStr } = parseFilename(filename);
 			const url = `/data/${tournament}/${encodeURIComponent(filename)}`;
 
-			const res = await fetch(url);
-			if (!res.ok) {
-				console.warn(`Failed to fetch ${url}`);
-				continue;
-			}
-			const text = await res.text();
+			const rows = await fetchCsv(url);
+			if (!rows) continue;
 
-			const result = Papa.parse(text, {
-				header: true,
-				dynamicTyping: true,
-				skipEmptyLines: true
-			});
+			const playerRows = rows.map(derivePlayerRow);
+			const performance = performanceByDateStr[dateStr] ?? null;
 
-			const playerRows = result.data.map(derivePlayerRow);
-
-			games.push({ tournament, opponent, date, dateStr, players: playerRows });
+			games.push({ tournament, opponent, date, dateStr, players: playerRows, performance });
 
 			for (const row of playerRows) {
 				accumulatePlayer(players, row, opponent, dateStr);
@@ -125,8 +170,35 @@ export async function loadAllStats() {
 
 		finalisePlayerAggregates(players);
 
-		tournaments[tournament] = { games, players };
+		// Aggregate tournament-level performance
+		const tournamentPerformance = aggregateTournamentPerformance(
+			games.map((g) => g.performance).filter(Boolean)
+		);
+
+		tournaments[tournament] = { games, players, performance: tournamentPerformance };
 	}
 
 	return { tournaments };
+}
+
+function aggregateTournamentPerformance(gamePerfs) {
+	const agg = {
+		holds: 0, cleanHolds: 0, holdOpportunities: 0,
+		breaks: 0, cleanBreaks: 0, breakOpportunities: 0,
+		totalTurnovers: 0, totalPoints: 0
+	};
+	for (const p of gamePerfs) {
+		agg.holds            += p.holds;
+		agg.cleanHolds       += p.cleanHolds;
+		agg.holdOpportunities+= p.holdOpportunities;
+		agg.breaks           += p.breaks;
+		agg.cleanBreaks      += p.cleanBreaks;
+		agg.breakOpportunities += p.breakOpportunities;
+		agg.totalTurnovers   += p.totalTurnovers;
+		agg.totalPoints      += p.totalPoints;
+	}
+	agg.turnoversPerPoint = agg.totalPoints > 0 ? agg.totalTurnovers / agg.totalPoints : 0;
+	agg.holdPct  = agg.holdOpportunities  > 0 ? (agg.holds  / agg.holdOpportunities)  * 100 : null;
+	agg.breakPct = agg.breakOpportunities > 0 ? (agg.breaks / agg.breakOpportunities) * 100 : null;
+	return agg;
 }

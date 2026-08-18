@@ -1,0 +1,23 @@
+node:internal/fs/watchers:321
+    const error = new UVException({
+                  ^
+
+Error: EBUSY: resource busy or locked, watch 'D:\stats\dashboard\static\data\nationals\Points vs. Dyno 2026-08-12_13-30-00.csv'
+    at FSWatcher.<computed> (node:internal/fs/watchers:321:19)
+    at Object.watch (node:fs:2548:36)
+    at createFsWatchInstance (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9408:16)
+    at setFsWatchListener (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9450:14)
+    at NodeFsHandler._watchWithNodeFs (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9565:20)
+    at NodeFsHandler._handleFile (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9609:24)
+    at NodeFsHandler._addToNodeFs (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9783:26)
+Emitted 'error' event on FSWatcher instance at:
+    at FSWatcher._handleError (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:10582:146)
+    at NodeFsHandler._addToNodeFs (file:///D:/stats/dashboard/node_modules/vite/dist/node/chunks/node.js:9788:18) {
+  errno: -4082,
+  syscall: 'watch',
+  code: 'EBUSY',
+  path: 'D:\\stats\\dashboard\\static\\data\\nationals\\Points vs. Dyno 2026-08-12_13-30-00.csv',
+  filename: 'D:\\stats\\dashboard\\static\\data\\nationals\\Points vs. Dyno 2026-08-12_13-30-00.csv'
+}
+
+Node.js v24.18.0
