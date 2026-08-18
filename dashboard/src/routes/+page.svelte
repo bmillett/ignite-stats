@@ -301,50 +301,52 @@
 		{#if perfSummary.hasData}
 		<!-- Performance cards -->
 		<section class="perf-cards">
-			<div class="perf-group">
-				<h3>Holds <small>({perfSummary.holdOpportunities} opp.)</small></h3>
-				<div class="cards">
-					<div class="card">
-						<span class="card-label">Holds</span>
-						<span class="card-value accent">{perfSummary.holds}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Hold %</span>
-						<span class="card-value">{perfSummary.holdPct !== null ? perfSummary.holdPct.toFixed(1) + '%' : '—'}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Clean Holds</span>
-						<span class="card-value good-eff">{perfSummary.cleanHolds}</span>
-					</div>
-				</div>
-			</div>
-			<div class="perf-group">
-				<h3>Breaks <small>({perfSummary.breakOpportunities} opp.)</small></h3>
-				<div class="cards">
-					<div class="card">
-						<span class="card-label">Breaks</span>
-						<span class="card-value accent">{perfSummary.breaks}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Break %</span>
-						<span class="card-value">{perfSummary.breakPct !== null ? perfSummary.breakPct.toFixed(1) + '%' : '—'}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Clean Breaks</span>
-						<span class="card-value good-eff">{perfSummary.cleanBreaks}</span>
+			<div class="perf-row">
+				<div class="perf-group">
+					<h3>Holds <small>({perfSummary.holdOpportunities} opp.)</small></h3>
+					<div class="cards">
+						<div class="card card-sm">
+							<span class="card-label">Holds</span>
+							<span class="card-value accent">{perfSummary.holds}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Hold %</span>
+							<span class="card-value">{perfSummary.holdPct !== null ? perfSummary.holdPct.toFixed(1) + '%' : '—'}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Clean</span>
+							<span class="card-value good-eff">{perfSummary.cleanHolds}</span>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="perf-group">
-				<h3>Turnovers</h3>
-				<div class="cards">
-					<div class="card">
-						<span class="card-label">Total</span>
-						<span class="card-value high-to">{perfSummary.totalTurnovers}</span>
+				<div class="perf-group">
+					<h3>Breaks <small>({perfSummary.breakOpportunities} opp.)</small></h3>
+					<div class="cards">
+						<div class="card card-sm">
+							<span class="card-label">Breaks</span>
+							<span class="card-value accent">{perfSummary.breaks}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Break %</span>
+							<span class="card-value">{perfSummary.breakPct !== null ? perfSummary.breakPct.toFixed(1) + '%' : '—'}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Clean</span>
+							<span class="card-value good-eff">{perfSummary.cleanBreaks}</span>
+						</div>
 					</div>
-					<div class="card">
-						<span class="card-label">Per Point</span>
-						<span class="card-value">{perfSummary.turnoversPerPoint.toFixed(2)}</span>
+				</div>
+				<div class="perf-group">
+					<h3>Turnovers <small>(from point data)</small></h3>
+					<div class="cards">
+						<div class="card card-sm">
+							<span class="card-label">Total</span>
+							<span class="card-value high-to">{perfSummary.totalTurnovers}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Per Point</span>
+							<span class="card-value">{perfSummary.turnoversPerPoint.toFixed(2)}</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -625,9 +627,27 @@
 	/* Performance groups */
 	.perf-cards {
 		margin-bottom: 2rem;
+	}
+
+	.perf-row {
 		display: flex;
-		flex-direction: column;
-		gap: 1rem;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.perf-group {
+		flex: 1;
+		min-width: 160px;
+	}
+
+	.card-sm {
+		min-width: 72px;
+		padding: 0.5rem 0.75rem;
+	}
+
+	.card-sm .card-value {
+		font-size: 1.1rem;
 	}
 
 	.perf-group h3 {

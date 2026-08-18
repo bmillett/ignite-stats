@@ -139,62 +139,64 @@
 
 		<!-- Summary cards -->
 		<section class="summary">
-			<div class="group">
-				<h3>Holds <small>({agg.holdOpportunities} opp.)</small></h3>
-				<div class="cards">
-					<div class="card">
-						<span class="card-label">Holds</span>
-						<span class="card-value accent">{agg.holds}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Hold %</span>
-						<span class="card-value">{agg.holdPct !== null ? agg.holdPct.toFixed(1) + '%' : '—'}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Clean Holds</span>
-						<span class="card-value good-eff">{agg.cleanHolds}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Clean Hold %</span>
-						<span class="card-value good-eff">{agg.holds > 0 ? ((agg.cleanHolds / agg.holds) * 100).toFixed(1) + '%' : '—'}</span>
-					</div>
-				</div>
-			</div>
-			<div class="group">
-				<h3>Breaks <small>({agg.breakOpportunities} opp.)</small></h3>
-				<div class="cards">
-					<div class="card">
-						<span class="card-label">Breaks</span>
-						<span class="card-value accent">{agg.breaks}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Break %</span>
-						<span class="card-value">{agg.breakPct !== null ? agg.breakPct.toFixed(1) + '%' : '—'}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Clean Breaks</span>
-						<span class="card-value good-eff">{agg.cleanBreaks}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Clean Break %</span>
-						<span class="card-value good-eff">{agg.breaks > 0 ? ((agg.cleanBreaks / agg.breaks) * 100).toFixed(1) + '%' : '—'}</span>
+			<div class="summary-row">
+				<div class="group">
+					<h3>Holds <small>({agg.holdOpportunities} opp.)</small></h3>
+					<div class="cards">
+						<div class="card card-sm">
+							<span class="card-label">Holds</span>
+							<span class="card-value accent">{agg.holds}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Hold %</span>
+							<span class="card-value">{agg.holdPct !== null ? agg.holdPct.toFixed(1) + '%' : '—'}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Clean</span>
+							<span class="card-value good-eff">{agg.cleanHolds}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Clean %</span>
+							<span class="card-value good-eff">{agg.holds > 0 ? ((agg.cleanHolds / agg.holds) * 100).toFixed(1) + '%' : '—'}</span>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="group">
-				<h3>Turnovers</h3>
-				<div class="cards">
-					<div class="card">
-						<span class="card-label">Total</span>
-						<span class="card-value high-to">{agg.totalTurnovers}</span>
+				<div class="group">
+					<h3>Breaks <small>({agg.breakOpportunities} opp.)</small></h3>
+					<div class="cards">
+						<div class="card card-sm">
+							<span class="card-label">Breaks</span>
+							<span class="card-value accent">{agg.breaks}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Break %</span>
+							<span class="card-value">{agg.breakPct !== null ? agg.breakPct.toFixed(1) + '%' : '—'}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Clean</span>
+							<span class="card-value good-eff">{agg.cleanBreaks}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Clean %</span>
+							<span class="card-value good-eff">{agg.breaks > 0 ? ((agg.cleanBreaks / agg.breaks) * 100).toFixed(1) + '%' : '—'}</span>
+						</div>
 					</div>
-					<div class="card">
-						<span class="card-label">Per Point</span>
-						<span class="card-value">{agg.turnoversPerPoint.toFixed(2)}</span>
-					</div>
-					<div class="card">
-						<span class="card-label">Total Points</span>
-						<span class="card-value">{agg.totalPoints}</span>
+				</div>
+				<div class="group">
+					<h3>Turnovers <small>(from point data)</small></h3>
+					<div class="cards">
+						<div class="card card-sm">
+							<span class="card-label">Total</span>
+							<span class="card-value high-to">{agg.totalTurnovers}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Per Point</span>
+							<span class="card-value">{agg.turnoversPerPoint.toFixed(2)}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">Points</span>
+							<span class="card-value">{agg.totalPoints}</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -302,7 +304,27 @@
 	.muted a { color: #3b82f6; }
 
 	/* Summary groups */
-	.summary { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+	.summary { margin-bottom: 2rem; }
+
+	.summary-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+	}
+
+	.group {
+		flex: 1;
+		min-width: 180px;
+	}
+
+	.card-sm {
+		min-width: 72px;
+		padding: 0.5rem 0.75rem;
+	}
+
+	.card-sm .card-value {
+		font-size: 1.1rem;
+	}
 
 	.group h3 {
 		font-size: 0.85rem;
