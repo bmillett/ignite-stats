@@ -336,19 +336,6 @@
 						</div>
 					</div>
 				</div>
-				<div class="perf-group">
-					<h3>Turnovers <small>(from point data)</small></h3>
-					<div class="cards">
-						<div class="card card-sm">
-							<span class="card-label">Total</span>
-							<span class="card-value high-to">{perfSummary.totalTurnovers}</span>
-						</div>
-						<div class="card card-sm">
-							<span class="card-label">Per Point</span>
-							<span class="card-value">{perfSummary.turnoversPerPoint.toFixed(2)}</span>
-						</div>
-					</div>
-				</div>
 			</div>
 			<a class="perf-link" href="/performance">Full performance breakdown →</a>
 		</section>
