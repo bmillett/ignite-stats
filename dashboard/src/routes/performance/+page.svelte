@@ -54,6 +54,7 @@
 			a.breaks                    += g.breaks;
 			a.cleanBreaks               += g.cleanBreaks;
 			a.breakOpportunities        += g.breakOpportunities;
+			a.pointsWithTurnoverForced  = (a.pointsWithTurnoverForced  || 0) + (g.pointsWithTurnoverForced  || 0);
 			a.dPointsWithTurnoverForced = (a.dPointsWithTurnoverForced || 0) + (g.dPointsWithTurnoverForced || 0);
 			a.totalTurnovers            += g.totalTurnovers;
 			a.totalPoints               += g.totalPoints;
@@ -64,6 +65,7 @@
 		a.holdPct              = a.holdOpportunities  > 0 ? (a.holds  / a.holdOpportunities)  * 100 : null;
 		a.breakPct             = a.breakOpportunities > 0 ? (a.breaks / a.breakOpportunities) * 100 : null;
 		a.dTurnoverForcedPct   = a.breakOpportunities > 0 ? ((a.dPointsWithTurnoverForced || 0) / a.breakOpportunities) * 100 : null;
+		a.turnoverForcedPct    = a.totalPoints        > 0 ? ((a.pointsWithTurnoverForced  || 0) / a.totalPoints)        * 100 : null;
 		a.turnoversPerPoint    = a.totalPoints > 0 ? a.totalTurnovers / a.totalPoints : 0;
 		return a;
 	});
@@ -216,6 +218,14 @@
 							<span class="card-value good-eff">{agg.oppTurnoversTotal}</span>
 						</div>
 						<div class="card card-sm">
+							<span class="card-label">Pts w/ TO</span>
+							<span class="card-value good-eff">{agg.pointsWithTurnoverForced || 0}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">% Pts w/ TO</span>
+							<span class="card-value good-eff">{agg.turnoverForcedPct !== null ? agg.turnoverForcedPct.toFixed(1) + '%' : '—'}</span>
+						</div>
+						<div class="card card-sm">
 							<span class="card-label">On O-line</span>
 							<span class="card-value">{agg.oppTurnoversOnOLine || 0}</span>
 						</div>
@@ -263,6 +273,7 @@
 								<th>Break %</th>
 								<th>Clean Breaks</th>
 								<th>D Turn Gen %</th>
+								<th>% Pts w/ TO</th>
 								<th>Opp TOs</th>
 								<th class="sub">On O</th>
 								<th class="sub">On D</th>
@@ -286,6 +297,8 @@
 								<td>{bp !== null ? bp.toFixed(1) + '%' : '—'}</td>
 								<td class="good-eff">{g.cleanBreaks}</td>
 								<td class="accent">{dtp !== null ? dtp.toFixed(1) + '%' : '—'}</td>
+								{@const tfp = g.totalPoints > 0 ? ((g.pointsWithTurnoverForced || 0) / g.totalPoints * 100) : null}
+								<td class="good-eff">{tfp !== null ? tfp.toFixed(1) + '%' : '—'}</td>
 								<td class="good-eff">{g.oppTurnoversTotal || 0}</td>
 								<td class="sub">{g.oppTurnoversOnOLine || 0}</td>
 								<td class="sub">{g.oppTurnoversOnDLine || 0}</td>
@@ -305,6 +318,7 @@
 							<td>{agg.breakPct !== null ? agg.breakPct.toFixed(1) + '%' : '—'}</td>
 							<td class="good-eff">{agg.cleanBreaks}</td>
 							<td class="accent">{agg.dTurnoverForcedPct !== null ? agg.dTurnoverForcedPct.toFixed(1) + '%' : '—'}</td>
+							<td class="good-eff">{agg.turnoverForcedPct !== null ? agg.turnoverForcedPct.toFixed(1) + '%' : '—'}</td>
 							<td class="good-eff">{agg.oppTurnoversTotal || 0}</td>
 							<td class="sub">{agg.oppTurnoversOnOLine || 0}</td>
 							<td class="sub">{agg.oppTurnoversOnDLine || 0}</td>
