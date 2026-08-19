@@ -84,8 +84,9 @@
 
 		return Object.values(merged).map((p) => ({
 			...p,
-			touchesPerPoint: p.totalPointsPlayed > 0 ? p.totalTouches / p.totalPointsPlayed : 0,
-			efficiency: p.totalTouches > 0 ? (1 - p.totalTurnovers / p.totalTouches) * 100 : null
+			touchesPerPoint:  p.totalPointsPlayed > 0 ? p.totalTouches / p.totalPointsPlayed : 0,
+			efficiency:       p.totalTouches > 0 ? (1 - p.totalTurnovers / p.totalTouches) * 100 : null,
+			throwErrorRate:   p.totalThrows > 0 ? (p.totalThrowerErrors / p.totalThrows) * 100 : null
 		}));
 	}
 
@@ -184,8 +185,14 @@
 							<th onclick={() => setSort('totalTurnovers')}>
 								Turnovers{sortIndicator('totalTurnovers')}
 							</th>
+							<th onclick={() => setSort('totalThrows')}>
+								Throws{sortIndicator('totalThrows')}
+							</th>
 							<th onclick={() => setSort('totalThrowerErrors')}>
 								Thrower Err{sortIndicator('totalThrowerErrors')}
+							</th>
+							<th onclick={() => setSort('throwErrorRate')}>
+								Throw Err %{sortIndicator('throwErrorRate')}
 							</th>
 							<th onclick={() => setSort('totalReceiverErrors')}>
 								Receiver Err{sortIndicator('totalReceiverErrors')}
@@ -219,7 +226,12 @@
 								<td>{p.totalPointsPlayed}</td>
 								<td class="accent">{p.totalTouches}</td>
 								<td class:high-to={p.totalTurnovers > TO_THRESHOLD}>{p.totalTurnovers}</td>
+								<td>{p.totalThrows}</td>
 								<td>{p.totalThrowerErrors}</td>
+								<td class="efficiency"
+									class:mid-eff={p.throwErrorRate !== null && p.throwErrorRate >= 5 && p.throwErrorRate < 10}
+									class:low-eff={p.throwErrorRate !== null && p.throwErrorRate >= 10}
+								>{p.throwErrorRate !== null ? p.throwErrorRate.toFixed(1) + '%' : '—'}</td>
 								<td>{p.totalReceiverErrors}</td>
 								<td>{p.touchesPerPoint.toFixed(2)}</td>
 								<td class="efficiency"
