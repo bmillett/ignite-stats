@@ -307,9 +307,9 @@
 			<div class="card">
 				<span class="card-label">Throw Accuracy</span>
 				<span class="card-value"
-					class:good-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 95}
-					class:mid-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 90 && summary.throwCompletionPct < 95}
-					class:low-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct < 90}
+					class:good-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 90}
+					class:mid-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 80 && summary.throwCompletionPct < 90}
+					class:low-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct < 80}
 				>{summary.throwCompletionPct !== null ? summary.throwCompletionPct.toFixed(1) + '%' : '—'}</span>
 			</div>
 			<div class="card">
@@ -413,8 +413,8 @@
 									>{totals.efficiency !== null ? totals.efficiency.toFixed(1) + '%' : '—'}</td>
 									<td>{totals.throws}</td>
 									<td class="efficiency"
-										class:mid-eff={totals.throwCompletionPct !== null && totals.throwCompletionPct >= 90 && totals.throwCompletionPct < 95}
-										class:low-eff={totals.throwCompletionPct !== null && totals.throwCompletionPct < 90}
+										class:mid-eff={totals.throwCompletionPct !== null && totals.throwCompletionPct >= 80 && totals.throwCompletionPct < 90}
+										class:low-eff={totals.throwCompletionPct !== null && totals.throwCompletionPct < 80}
 									>{totals.throwCompletionPct !== null ? totals.throwCompletionPct.toFixed(1) + '%' : '—'}</td>
 									<td>{totals.throwDistYards.toFixed(1)} yds</td>
 								</tr>
@@ -432,9 +432,9 @@
 								>{summary.efficiency !== null ? summary.efficiency.toFixed(1) + '%' : '—'}</td>
 								<td>{summary.throws}</td>
 								<td class="efficiency"
-									class:good-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 95}
-									class:mid-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 90 && summary.throwCompletionPct < 95}
-									class:low-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct < 90}
+									class:good-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 90}
+									class:mid-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 80 && summary.throwCompletionPct < 90}
+									class:low-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct < 80}
 								>{summary.throwCompletionPct !== null ? summary.throwCompletionPct.toFixed(1) + '%' : '—'}</td>
 								<td>{summary.throwDistYards.toFixed(1)} yds</td>
 							</tr>
