@@ -22,6 +22,7 @@
 
 	function toggle(name) {
 		if (selected.includes(name)) {
+			if (selected.length === 1) return; // prevent deselecting the last tournament
 			selected = selected.filter((t) => t !== name);
 		} else {
 			selected = [...selected, name];
