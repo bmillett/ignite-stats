@@ -305,7 +305,7 @@
 				<span class="card-value">{summary.throws}</span>
 			</div>
 			<div class="card">
-				<span class="card-label">Throw Completion</span>
+				<span class="card-label">Throw Accuracy</span>
 				<span class="card-value"
 					class:good-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 95}
 					class:mid-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 90 && summary.throwCompletionPct < 95}
