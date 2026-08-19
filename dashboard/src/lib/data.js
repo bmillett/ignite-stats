@@ -14,22 +14,32 @@ function parseFilename(filename) {
 function deriveGamePerformance(pointRows) {
 	let holds = 0, cleanHolds = 0, holdOpportunities = 0;
 	let breaks = 0, cleanBreaks = 0, breakOpportunities = 0;
+	// D-line points where we generated at least one turnover (block or opp error)
+	let dPointsWithTurnoverForced = 0;
 	let totalTurnovers = 0, totalPoints = pointRows.length;
+	// Opponent turnovers forced: blocks + opposition errors, split by line
+	let oppTurnoversOnOLine = 0, oppTurnoversOnDLine = 0;
 
 	for (const row of pointRows) {
-		const onOffense = row['Started on offense?'] === 1;
-		const scored    = row['Scored?'] === 1;
-		const tos       = row['Turnovers'] || 0;
-		totalTurnovers += tos;
+		const onOffense  = row['Started on offense?'] === 1;
+		const scored     = row['Scored?'] === 1;
+		const tos        = row['Turnovers'] || 0;
+		const blocks     = row['Defensive blocks'] || 0;
+		const oppErrors  = row['Opposition errors'] || 0;
+		const oppTos     = blocks + oppErrors;
+		totalTurnovers  += tos;
 
 		if (onOffense) {
 			holdOpportunities++;
+			oppTurnoversOnOLine += oppTos;
 			if (scored) {
 				holds++;
 				if (tos === 0) cleanHolds++;
 			}
 		} else {
 			breakOpportunities++;
+			oppTurnoversOnDLine += oppTos;
+			if (oppTos > 0) dPointsWithTurnoverForced++;
 			if (scored) {
 				breaks++;
 				if (tos === 0) cleanBreaks++;
@@ -40,11 +50,15 @@ function deriveGamePerformance(pointRows) {
 	return {
 		holds, cleanHolds, holdOpportunities,
 		breaks, cleanBreaks, breakOpportunities,
+		dPointsWithTurnoverForced,
 		totalTurnovers, totalPoints,
+		oppTurnoversOnOLine, oppTurnoversOnDLine,
+		oppTurnoversTotal: oppTurnoversOnOLine + oppTurnoversOnDLine,
 		turnoversPerPoint: totalPoints > 0 ? totalTurnovers / totalPoints : 0,
-		holdPct: holdOpportunities > 0 ? (holds / holdOpportunities) * 100 : null,
+		holdPct:  holdOpportunities  > 0 ? (holds  / holdOpportunities)  * 100 : null,
 		breakPct: breakOpportunities > 0 ? (breaks / breakOpportunities) * 100 : null,
-		points: pointRows  // keep raw rows for drill-down
+		dTurnoverForcedPct: breakOpportunities > 0 ? (dPointsWithTurnoverForced / breakOpportunities) * 100 : null,
+		points: pointRows
 	};
 }
 
@@ -185,20 +199,27 @@ function aggregateTournamentPerformance(gamePerfs) {
 	const agg = {
 		holds: 0, cleanHolds: 0, holdOpportunities: 0,
 		breaks: 0, cleanBreaks: 0, breakOpportunities: 0,
-		totalTurnovers: 0, totalPoints: 0
+		dPointsWithTurnoverForced: 0,
+		totalTurnovers: 0, totalPoints: 0,
+		oppTurnoversOnOLine: 0, oppTurnoversOnDLine: 0
 	};
 	for (const p of gamePerfs) {
-		agg.holds            += p.holds;
-		agg.cleanHolds       += p.cleanHolds;
-		agg.holdOpportunities+= p.holdOpportunities;
-		agg.breaks           += p.breaks;
-		agg.cleanBreaks      += p.cleanBreaks;
-		agg.breakOpportunities += p.breakOpportunities;
-		agg.totalTurnovers   += p.totalTurnovers;
-		agg.totalPoints      += p.totalPoints;
+		agg.holds                     += p.holds;
+		agg.cleanHolds                += p.cleanHolds;
+		agg.holdOpportunities         += p.holdOpportunities;
+		agg.breaks                    += p.breaks;
+		agg.cleanBreaks               += p.cleanBreaks;
+		agg.breakOpportunities        += p.breakOpportunities;
+		agg.dPointsWithTurnoverForced += p.dPointsWithTurnoverForced;
+		agg.totalTurnovers            += p.totalTurnovers;
+		agg.totalPoints               += p.totalPoints;
+		agg.oppTurnoversOnOLine       += p.oppTurnoversOnOLine;
+		agg.oppTurnoversOnDLine       += p.oppTurnoversOnDLine;
 	}
-	agg.turnoversPerPoint = agg.totalPoints > 0 ? agg.totalTurnovers / agg.totalPoints : 0;
-	agg.holdPct  = agg.holdOpportunities  > 0 ? (agg.holds  / agg.holdOpportunities)  * 100 : null;
-	agg.breakPct = agg.breakOpportunities > 0 ? (agg.breaks / agg.breakOpportunities) * 100 : null;
+	agg.oppTurnoversTotal   = agg.oppTurnoversOnOLine + agg.oppTurnoversOnDLine;
+	agg.turnoversPerPoint   = agg.totalPoints > 0 ? agg.totalTurnovers / agg.totalPoints : 0;
+	agg.holdPct             = agg.holdOpportunities  > 0 ? (agg.holds  / agg.holdOpportunities)  * 100 : null;
+	agg.breakPct            = agg.breakOpportunities > 0 ? (agg.breaks / agg.breakOpportunities) * 100 : null;
+	agg.dTurnoverForcedPct  = agg.breakOpportunities > 0 ? (agg.dPointsWithTurnoverForced / agg.breakOpportunities) * 100 : null;
 	return agg;
 }

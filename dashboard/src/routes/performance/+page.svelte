@@ -48,18 +48,23 @@
 			totalTurnovers: 0, totalPoints: 0
 		};
 		for (const g of gameRows) {
-			a.holds             += g.holds;
-			a.cleanHolds        += g.cleanHolds;
-			a.holdOpportunities += g.holdOpportunities;
-			a.breaks            += g.breaks;
-			a.cleanBreaks       += g.cleanBreaks;
-			a.breakOpportunities+= g.breakOpportunities;
-			a.totalTurnovers    += g.totalTurnovers;
-			a.totalPoints       += g.totalPoints;
+			a.holds                     += g.holds;
+			a.cleanHolds                += g.cleanHolds;
+			a.holdOpportunities         += g.holdOpportunities;
+			a.breaks                    += g.breaks;
+			a.cleanBreaks               += g.cleanBreaks;
+			a.breakOpportunities        += g.breakOpportunities;
+			a.dPointsWithTurnoverForced = (a.dPointsWithTurnoverForced || 0) + (g.dPointsWithTurnoverForced || 0);
+			a.totalTurnovers            += g.totalTurnovers;
+			a.totalPoints               += g.totalPoints;
+			a.oppTurnoversOnOLine       = (a.oppTurnoversOnOLine || 0) + (g.oppTurnoversOnOLine || 0);
+			a.oppTurnoversOnDLine       = (a.oppTurnoversOnDLine || 0) + (g.oppTurnoversOnDLine || 0);
 		}
-		a.holdPct  = a.holdOpportunities  > 0 ? (a.holds  / a.holdOpportunities)  * 100 : null;
-		a.breakPct = a.breakOpportunities > 0 ? (a.breaks / a.breakOpportunities) * 100 : null;
-		a.turnoversPerPoint = a.totalPoints > 0 ? a.totalTurnovers / a.totalPoints : 0;
+		a.oppTurnoversTotal    = (a.oppTurnoversOnOLine || 0) + (a.oppTurnoversOnDLine || 0);
+		a.holdPct              = a.holdOpportunities  > 0 ? (a.holds  / a.holdOpportunities)  * 100 : null;
+		a.breakPct             = a.breakOpportunities > 0 ? (a.breaks / a.breakOpportunities) * 100 : null;
+		a.dTurnoverForcedPct   = a.breakOpportunities > 0 ? ((a.dPointsWithTurnoverForced || 0) / a.breakOpportunities) * 100 : null;
+		a.turnoversPerPoint    = a.totalPoints > 0 ? a.totalTurnovers / a.totalPoints : 0;
 		return a;
 	});
 
@@ -180,10 +185,14 @@
 							<span class="card-label">Clean %</span>
 							<span class="card-value good-eff">{agg.breaks > 0 ? ((agg.cleanBreaks / agg.breaks) * 100).toFixed(1) + '%' : '—'}</span>
 						</div>
+						<div class="card card-sm">
+							<span class="card-label">D Turn Gen %</span>
+							<span class="card-value accent">{agg.dTurnoverForcedPct !== null ? agg.dTurnoverForcedPct.toFixed(1) + '%' : '—'}</span>
+						</div>
 					</div>
 				</div>
 				<div class="group">
-					<h3>Turnovers <small>(from point data)</small></h3>
+					<h3>Our Turnovers</h3>
 					<div class="cards">
 						<div class="card card-sm">
 							<span class="card-label">Total</span>
@@ -196,6 +205,23 @@
 						<div class="card card-sm">
 							<span class="card-label">Points</span>
 							<span class="card-value">{agg.totalPoints}</span>
+						</div>
+					</div>
+				</div>
+				<div class="group">
+					<h3>Opp. Turnovers Forced</h3>
+					<div class="cards">
+						<div class="card card-sm">
+							<span class="card-label">Total</span>
+							<span class="card-value good-eff">{agg.oppTurnoversTotal}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">On O-line</span>
+							<span class="card-value">{agg.oppTurnoversOnOLine || 0}</span>
+						</div>
+						<div class="card card-sm">
+							<span class="card-label">On D-line</span>
+							<span class="card-value">{agg.oppTurnoversOnDLine || 0}</span>
 						</div>
 					</div>
 				</div>
@@ -228,20 +254,25 @@
 							<th class="left">Opponent</th>
 							<th class="left">Date</th>
 							<th>Points</th>
-							<th>TOs</th>
-							<th>TO/Pt</th>
-							<th>Holds</th>
-							<th>Hold %</th>
-							<th>Clean Holds</th>
-							<th>Breaks</th>
-							<th>Break %</th>
-							<th>Clean Breaks</th>
+								<th>Our TOs</th>
+								<th>TO/Pt</th>
+								<th>Holds</th>
+								<th>Hold %</th>
+								<th>Clean Holds</th>
+								<th>Breaks</th>
+								<th>Break %</th>
+								<th>Clean Breaks</th>
+								<th>D Turn Gen %</th>
+								<th>Opp TOs</th>
+								<th class="sub">On O</th>
+								<th class="sub">On D</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each gameRows as g}
-							{@const hp = g.holdOpportunities > 0 ? (g.holds / g.holdOpportunities * 100) : null}
-							{@const bp = g.breakOpportunities > 0 ? (g.breaks / g.breakOpportunities * 100) : null}
+							{@const hp  = g.holdOpportunities  > 0 ? (g.holds  / g.holdOpportunities  * 100) : null}
+							{@const bp  = g.breakOpportunities > 0 ? (g.breaks / g.breakOpportunities * 100) : null}
+							{@const dtp = g.breakOpportunities > 0 ? ((g.dPointsWithTurnoverForced || 0) / g.breakOpportunities * 100) : null}
 							<tr>
 								<td class="left">vs {g.opponent}</td>
 								<td class="left">{g.dateStr}</td>
@@ -254,6 +285,10 @@
 								<td class="accent">{g.breaks} / {g.breakOpportunities}</td>
 								<td>{bp !== null ? bp.toFixed(1) + '%' : '—'}</td>
 								<td class="good-eff">{g.cleanBreaks}</td>
+								<td class="accent">{dtp !== null ? dtp.toFixed(1) + '%' : '—'}</td>
+								<td class="good-eff">{g.oppTurnoversTotal || 0}</td>
+								<td class="sub">{g.oppTurnoversOnOLine || 0}</td>
+								<td class="sub">{g.oppTurnoversOnDLine || 0}</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -269,6 +304,10 @@
 							<td class="accent">{agg.breaks} / {agg.breakOpportunities}</td>
 							<td>{agg.breakPct !== null ? agg.breakPct.toFixed(1) + '%' : '—'}</td>
 							<td class="good-eff">{agg.cleanBreaks}</td>
+							<td class="accent">{agg.dTurnoverForcedPct !== null ? agg.dTurnoverForcedPct.toFixed(1) + '%' : '—'}</td>
+							<td class="good-eff">{agg.oppTurnoversTotal || 0}</td>
+							<td class="sub">{agg.oppTurnoversOnOLine || 0}</td>
+							<td class="sub">{agg.oppTurnoversOnDLine || 0}</td>
 						</tr>
 					</tfoot>
 				</table>
