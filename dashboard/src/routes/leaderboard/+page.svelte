@@ -187,6 +187,12 @@
 							<th onclick={() => setSort('totalTurnovers')}>
 								Turnovers{sortIndicator('totalTurnovers')}
 							</th>
+							<th onclick={() => setSort('touchesPerPoint')}>
+								T/Point{sortIndicator('touchesPerPoint')}
+							</th>
+							<th onclick={() => setSort('efficiency')}>
+								Efficiency{sortIndicator('efficiency')}
+							</th>
 							<th onclick={() => setSort('totalThrows')}>
 								Throws{sortIndicator('totalThrows')}
 							</th>
@@ -198,12 +204,6 @@
 							</th>
 							<th onclick={() => setSort('totalReceiverErrors')}>
 								Receiver Err{sortIndicator('totalReceiverErrors')}
-							</th>
-							<th onclick={() => setSort('touchesPerPoint')}>
-								T/Point{sortIndicator('touchesPerPoint')}
-							</th>
-							<th onclick={() => setSort('efficiency')}>
-								Efficiency{sortIndicator('efficiency')}
 							</th>
 							<th onclick={() => setSort('totalThrowDistanceYards')}>
 								Throw Dist (yds){sortIndicator('totalThrowDistanceYards')}
@@ -228,6 +228,11 @@
 								<td>{p.totalPointsPlayed}</td>
 								<td class="accent">{p.totalTouches}</td>
 								<td class:high-to={p.totalTurnovers > TO_THRESHOLD}>{p.totalTurnovers}</td>
+								<td>{p.touchesPerPoint.toFixed(2)}</td>
+								<td class="efficiency"
+									class:mid-eff={p.efficiency !== null && p.efficiency >= 80 && p.efficiency < 90}
+									class:low-eff={p.efficiency !== null && p.efficiency < 80}
+								>{p.efficiency !== null ? p.efficiency.toFixed(1) + '%' : '—'}</td>
 								<td>{p.totalThrows}</td>
 								<td>{p.totalThrowerErrors}</td>
 								<td class="efficiency"
@@ -235,11 +240,6 @@
 									class:low-eff={p.throwErrorRate !== null && p.throwErrorRate >= 10}
 								>{p.throwErrorRate !== null ? p.throwErrorRate.toFixed(1) + '%' : '—'}</td>
 								<td>{p.totalReceiverErrors}</td>
-								<td>{p.touchesPerPoint.toFixed(2)}</td>
-								<td class="efficiency"
-									class:mid-eff={p.efficiency !== null && p.efficiency >= 80 && p.efficiency < 90}
-									class:low-eff={p.efficiency !== null && p.efficiency < 80}
-								>{p.efficiency !== null ? p.efficiency.toFixed(1) + '%' : '—'}</td>
 								<td>{p.totalThrowDistanceYards.toFixed(1)}</td>
 								<td>{p.totalAssists}</td>
 								<td>{p.totalGoals}</td>
