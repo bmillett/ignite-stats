@@ -54,31 +54,33 @@
 			if (!tourney) continue;
 			for (const [name, p] of Object.entries(tourney.players)) {
 				if (!merged[name]) {
-					merged[name] = {
-						name: p.name,
-						displayName: p.displayName,
-						number: p.number,
-						totalPointsPlayed: 0,
-						totalTouches: 0,
-						totalTurnovers: 0,
-						totalThrowerErrors: 0,
-						totalReceiverErrors: 0,
-						totalThrowDistanceYards: 0,
-						totalAssists: 0,
-						totalGoals: 0,
-						totalBlocks: 0
-					};
-				}
-				const m = merged[name];
-				m.totalPointsPlayed += p.totalPointsPlayed;
-				m.totalTouches += p.totalTouches;
-				m.totalTurnovers += p.totalTurnovers;
-				m.totalThrowerErrors += p.totalThrowerErrors;
-				m.totalReceiverErrors += p.totalReceiverErrors;
-				m.totalThrowDistanceYards += p.totalThrowDistanceYards;
-				m.totalAssists += p.totalAssists;
-				m.totalGoals += p.totalGoals;
-				m.totalBlocks += p.totalBlocks;
+						merged[name] = {
+							name: p.name,
+							displayName: p.displayName,
+							number: p.number,
+							totalPointsPlayed: 0,
+							totalTouches: 0,
+							totalTurnovers: 0,
+							totalThrowerErrors: 0,
+							totalReceiverErrors: 0,
+							totalThrowDistanceYards: 0,
+							totalAssists: 0,
+							totalGoals: 0,
+							totalBlocks: 0,
+							totalThrows: 0
+						};
+					}
+					const m = merged[name];
+					m.totalPointsPlayed += p.totalPointsPlayed;
+					m.totalTouches += p.totalTouches;
+					m.totalTurnovers += p.totalTurnovers;
+					m.totalThrowerErrors += p.totalThrowerErrors;
+					m.totalReceiverErrors += p.totalReceiverErrors;
+					m.totalThrowDistanceYards += p.totalThrowDistanceYards;
+					m.totalAssists += p.totalAssists;
+					m.totalGoals += p.totalGoals;
+					m.totalBlocks += p.totalBlocks;
+					m.totalThrows += p.totalThrows;
 			}
 		}
 
