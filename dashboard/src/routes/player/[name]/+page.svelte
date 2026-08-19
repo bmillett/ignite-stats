@@ -72,7 +72,7 @@
 				totalTouches: 0, totalTurnovers: 0, avgTouchesPerPoint: 0,
 				efficiency: null, totalThrowDistYards: 0, totalAssists: 0,
 				totalGoals: 0, totalBlocks: 0, totalPointsPlayed: 0,
-				totalThrows: 0, totalThrowerErrors: 0, throwErrorRate: null
+				totalThrows: 0, totalThrowerErrors: 0, throwAccuracy: null
 			};
 
 		let totalTouches = 0, totalTurnovers = 0, totalThrowDistYards = 0,
@@ -93,12 +93,12 @@
 
 		const avgTouchesPerPoint = totalPointsPlayed > 0 ? totalTouches / totalPointsPlayed : 0;
 		const efficiency         = totalTouches > 0 ? (1 - totalTurnovers / totalTouches) * 100 : null;
-		const throwErrorRate     = totalThrows  > 0 ? (totalThrowerErrors / totalThrows) * 100 : null;
+		const throwAccuracy      = totalThrows  > 0 ? (1 - totalThrowerErrors / totalThrows) * 100 : null;
 
 		return {
 			totalTouches, totalTurnovers, avgTouchesPerPoint, efficiency,
 			totalThrowDistYards, totalAssists, totalGoals, totalBlocks,
-			totalPointsPlayed, totalThrows, totalThrowerErrors, throwErrorRate
+			totalPointsPlayed, totalThrows, totalThrowerErrors, throwAccuracy
 		};
 	});
 
@@ -211,12 +211,12 @@
 				<span class="card-value">{summary.totalThrows}</span>
 			</div>
 			<div class="card">
-				<span class="card-label">Throw Err %</span>
+				<span class="card-label">Throw Acc %</span>
 				<span class="card-value"
-					class:good-eff={summary.throwErrorRate !== null && summary.throwErrorRate < 5}
-					class:mid-eff={summary.throwErrorRate !== null && summary.throwErrorRate >= 5 && summary.throwErrorRate < 10}
-					class:low-eff={summary.throwErrorRate !== null && summary.throwErrorRate >= 10}
-				>{summary.throwErrorRate !== null ? summary.throwErrorRate.toFixed(1) + '%' : '—'}</span>
+					class:good-eff={summary.throwAccuracy !== null && summary.throwAccuracy >= 90}
+					class:mid-eff={summary.throwAccuracy !== null && summary.throwAccuracy >= 80 && summary.throwAccuracy < 90}
+					class:low-eff={summary.throwAccuracy !== null && summary.throwAccuracy < 80}
+				>{summary.throwAccuracy !== null ? summary.throwAccuracy.toFixed(1) + '%' : '—'}</span>
 			</div>
 			<div class="card">
 				<span class="card-label">Efficiency</span>
@@ -274,7 +274,7 @@
 							<th>Turnovers</th>
 							<th>Throws</th>
 							<th class="sub">Thrower Err</th>
-							<th class="sub">Throw Err %</th>
+							<th class="sub">Throw Acc %</th>
 							<th class="sub">Receiver Err</th>
 							<th>Efficiency</th>
 							<th>T/Point</th>
@@ -292,7 +292,7 @@
 							{@const tpp = pts > 0 ? touches / pts : 0}
 							{@const turnovers = g['Turnovers'] ?? 0}
 							{@const throwerErr = g['Thrower errors'] || 0}
-							{@const throwErrRate = throws > 0 ? (throwerErr / throws) * 100 : null}
+							{@const throwAccuracy = throws > 0 ? (1 - throwerErr / throws) * 100 : null}
 							{@const eff = calcEfficiency(touches, turnovers)}
 							<tr>
 								<td class="left">vs {g.opponent}</td>
@@ -303,10 +303,10 @@
 								<td>{throws}</td>
 								<td class="sub">{throwerErr}</td>
 								<td class="sub"
-									class:mid-eff={throwErrRate !== null && throwErrRate >= 5 && throwErrRate < 10}
-									class:low-eff={throwErrRate !== null && throwErrRate >= 10}
-									class:good-eff={throwErrRate !== null && throwErrRate < 5}
-								>{throwErrRate !== null ? throwErrRate.toFixed(1) + '%' : '—'}</td>
+									class:good-eff={throwAccuracy !== null && throwAccuracy >= 90}
+									class:mid-eff={throwAccuracy !== null && throwAccuracy >= 80 && throwAccuracy < 90}
+									class:low-eff={throwAccuracy !== null && throwAccuracy < 80}
+								>{throwAccuracy !== null ? throwAccuracy.toFixed(1) + '%' : '—'}</td>
 								<td class="sub">{g['Receiver errors'] ?? 0}</td>
 								<td class="efficiency"
 									class:mid-eff={eff !== null && eff >= EFF_MID && eff < EFF_HIGH}
