@@ -10,6 +10,7 @@
 		Legend
 	} from 'chart.js';
 	import { statsStore, selectedTournaments } from '$lib/stores.js';
+	import TournamentSelector from '$lib/TournamentSelector.svelte';
 
 	Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -150,7 +151,7 @@
 <div class="page">
 	<header>
 		<div class="header-left">
-			<a class="back" href="/">← Tournament Overview</a>
+			<a class="back" href="/">← Team Overview</a>
 			<h1>Player Leaderboard</h1>
 		</div>
 	</header>
@@ -160,6 +161,8 @@
 	{:else if players.length === 0}
 		<p class="empty">No data. Go to the <a href="/">overview</a> first to load stats.</p>
 	{:else}
+		<TournamentSelector {stats} />
+
 		<!-- Top-10 Touches Chart -->
 		<section class="chart-section">
 			<h2>Top 10 Players by Touches</h2>

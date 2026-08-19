@@ -10,6 +10,7 @@
 		Legend
 	} from 'chart.js';
 	import { statsStore, selectedTournaments } from '$lib/stores.js';
+	import TournamentSelector from '$lib/TournamentSelector.svelte';
 
 	Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -134,7 +135,7 @@
 
 <div class="page">
 	<header>
-		<a class="back" href="/">← Overview</a>
+		<a class="back" href="/">← Team Overview</a>
 		<h1>Performance</h1>
 	</header>
 
@@ -143,6 +144,7 @@
 	{:else if gameRows.length === 0}
 		<p class="muted">No performance data available. Points CSV files are needed alongside Player Stats files.</p>
 	{:else}
+		<TournamentSelector {stats} />
 
 		<!-- Summary cards -->
 		<section class="summary">

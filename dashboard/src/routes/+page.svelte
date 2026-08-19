@@ -15,6 +15,7 @@
 	} from 'chart.js';
 	import { loadAllStats } from '$lib/data.js';
 	import { statsStore, selectedTournaments } from '$lib/stores.js';
+	import TournamentSelector from '$lib/TournamentSelector.svelte';
 
 	Chart.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -23,34 +24,23 @@
 
 	let loading = $state(true);
 	let stats = $state(null);
-
-	// Reactive: list of all tournament names
-	let allTournaments = $state([]);
 	let selected = $state([]);
 
 	onMount(async () => {
 		const data = await loadAllStats();
 		statsStore.set(data);
 		stats = data;
-		allTournaments = Object.keys(data.tournaments);
-		selected = [...allTournaments];
+		const all = Object.keys(data.tournaments);
+		selected = [...all];
 		selectedTournaments.set(selected);
 		loading = false;
 	});
 
-	function toggleTournament(name) {
-		if (selected.includes(name)) {
-			selected = selected.filter((t) => t !== name);
-		} else {
-			selected = [...selected, name];
-		}
-		selectedTournaments.set(selected);
-	}
-
-	function selectAll() {
-		selected = [...allTournaments];
-		selectedTournaments.set(selected);
-	}
+	// Keep local selected in sync with store (for derived computations below)
+	$effect(() => {
+		const unsub = selectedTournaments.subscribe((v) => (selected = v));
+		return unsub;
+	});
 
 	// Filtered games across selected tournaments, sorted by date ascending
 	function getFilteredGames(statsData, sel) {
@@ -237,11 +227,6 @@
 		agg.hasData = agg.totalPoints > 0;
 		return agg;
 	});
-	let selectorLabel = $derived(
-		selected.length === allTournaments.length && allTournaments.length > 0
-			? 'Combined'
-			: selected.join(', ') || 'None'
-	);
 </script>
 
 <svelte:head>
@@ -259,24 +244,7 @@
 	{#if loading}
 		<p class="loading">Loading stats…</p>
 	{:else}
-		<!-- Tournament Selector -->
-		<section class="selector">
-			<span class="selector-label">Showing: <strong>{selectorLabel}</strong></span>
-			<div class="pills">
-				{#each allTournaments as t}
-					<button
-						class="pill"
-						class:active={selected.includes(t)}
-						onclick={() => toggleTournament(t)}
-					>
-						{t}
-					</button>
-				{/each}
-				{#if allTournaments.length > 1}
-					<button class="pill pill-all" onclick={selectAll}>All</button>
-				{/if}
-			</div>
-		</section>
+		<TournamentSelector {stats} />
 
 		<!-- Summary stat cards -->
 		<section class="cards">
@@ -480,55 +448,6 @@
 	.loading {
 		color: #94a3b8;
 		font-style: italic;
-	}
-
-	.selector {
-		margin-bottom: 1.5rem;
-	}
-
-	.selector-label {
-		font-size: 0.9rem;
-		color: #94a3b8;
-		display: block;
-		margin-bottom: 0.5rem;
-	}
-
-	.pills {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-	}
-
-	.pill {
-		padding: 0.3rem 0.8rem;
-		border-radius: 999px;
-		border: 1px solid #475569;
-		background: transparent;
-		color: #94a3b8;
-		font-size: 0.85rem;
-		cursor: pointer;
-		transition: background 0.15s, color 0.15s, border-color 0.15s;
-	}
-
-	.pill:hover {
-		border-color: #3b82f6;
-		color: #e2e8f0;
-	}
-
-	.pill.active {
-		background: #3b82f6;
-		border-color: #3b82f6;
-		color: #fff;
-	}
-
-	.pill-all {
-		border-color: #7c5cd8;
-		color: #7c5cd8;
-	}
-
-	.pill-all:hover {
-		background: #7c5cd8;
-		color: #fff;
 	}
 
 	.chart-section,
