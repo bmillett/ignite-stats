@@ -69,13 +69,18 @@
 		let touches = 0;
 		let turnovers = 0;
 		let throwDistYards = 0;
+		let throws = 0;
+		let throwerErrors = 0;
 		for (const p of game.players) {
 			touches += p['Touches'] || 0;
 			turnovers += p['Turnovers'] ?? 0;
 			throwDistYards += p.throwDistanceYards || 0;
+			throws += p['Throws'] || 0;
+			throwerErrors += p['Thrower errors'] || 0;
 		}
 		const efficiency = touches > 0 ? (1 - turnovers / touches) * 100 : null;
-		return { touches, turnovers, throwDistYards, efficiency };
+		const throwCompletionPct = throws > 0 ? ((throws - throwerErrors) / throws) * 100 : null;
+		return { touches, turnovers, throwDistYards, efficiency, throws, throwCompletionPct };
 	}
 
 	// Build bar chart data (touches vs turnovers) from filtered games
@@ -192,15 +197,18 @@
 
 	// Tournament-wide summary totals across all filtered games
 	let summary = $derived.by(() => {
-		let touches = 0, turnovers = 0, throwDistYards = 0, games = filteredGames.length;
+		let touches = 0, turnovers = 0, throwDistYards = 0, throws = 0, throwerErrors = 0, games = filteredGames.length;
 		for (const g of filteredGames) {
 			const t = gameTeamTotals(g);
 			touches += t.touches;
 			turnovers += t.turnovers;
 			throwDistYards += t.throwDistYards;
+			throws += t.throws;
+			throwerErrors += t.throws > 0 ? t.throws * (1 - (t.throwCompletionPct ?? 100) / 100) : 0;
 		}
 		const efficiency = touches > 0 ? (1 - turnovers / touches) * 100 : null;
-		return { games, touches, turnovers, throwDistYards, efficiency };
+		const throwCompletionPct = throws > 0 ? ((throws - throwerErrors) / throws) * 100 : null;
+		return { games, touches, turnovers, throwDistYards, efficiency, throws, throwCompletionPct };
 	});
 
 	// Aggregate performance (holds/breaks) across selected tournaments
@@ -237,12 +245,12 @@
 </script>
 
 <svelte:head>
-	<title>Tournament Overview</title>
+	<title>Team Overview</title>
 </svelte:head>
 
 <div class="page">
 	<header>
-		<h1>Tournament Overview</h1>
+		<h1>Team Overview</h1>
 		<nav>
 			<a href="/leaderboard">View Leaderboard →</a>
 		</nav>
@@ -291,6 +299,18 @@
 					class:mid-eff={summary.efficiency !== null && summary.efficiency >= EFF_MID && summary.efficiency < EFF_HIGH}
 					class:low-eff={summary.efficiency !== null && summary.efficiency < EFF_MID}
 				>{summary.efficiency !== null ? summary.efficiency.toFixed(1) + '%' : '—'}</span>
+			</div>
+			<div class="card">
+				<span class="card-label">Total Throws</span>
+				<span class="card-value">{summary.throws}</span>
+			</div>
+			<div class="card">
+				<span class="card-label">Throw Completion</span>
+				<span class="card-value"
+					class:good-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 95}
+					class:mid-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 90 && summary.throwCompletionPct < 95}
+					class:low-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct < 90}
+				>{summary.throwCompletionPct !== null ? summary.throwCompletionPct.toFixed(1) + '%' : '—'}</span>
 			</div>
 			<div class="card">
 				<span class="card-label">Throw Distance</span>
@@ -370,10 +390,12 @@
 								<th>Tournament</th>
 								<th>Opponent</th>
 								<th>Date</th>
-								<th>Team Touches</th>
-								<th>Team Turnovers</th>
+								<th>Touches</th>
+								<th>Turnovers</th>
 								<th>Efficiency</th>
-								<th>Throw Distance (yds)</th>
+								<th>Throws</th>
+								<th>Completion %</th>
+								<th>Throw Dist (yds)</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -389,6 +411,11 @@
 										class:mid-eff={totals.efficiency !== null && totals.efficiency >= EFF_MID && totals.efficiency < EFF_HIGH}
 										class:low-eff={totals.efficiency !== null && totals.efficiency < EFF_MID}
 									>{totals.efficiency !== null ? totals.efficiency.toFixed(1) + '%' : '—'}</td>
+									<td>{totals.throws}</td>
+									<td class="efficiency"
+										class:mid-eff={totals.throwCompletionPct !== null && totals.throwCompletionPct >= 90 && totals.throwCompletionPct < 95}
+										class:low-eff={totals.throwCompletionPct !== null && totals.throwCompletionPct < 90}
+									>{totals.throwCompletionPct !== null ? totals.throwCompletionPct.toFixed(1) + '%' : '—'}</td>
 									<td>{totals.throwDistYards.toFixed(1)} yds</td>
 								</tr>
 							{/each}
@@ -403,6 +430,12 @@
 									class:mid-eff={summary.efficiency !== null && summary.efficiency >= EFF_MID && summary.efficiency < EFF_HIGH}
 									class:low-eff={summary.efficiency !== null && summary.efficiency < EFF_MID}
 								>{summary.efficiency !== null ? summary.efficiency.toFixed(1) + '%' : '—'}</td>
+								<td>{summary.throws}</td>
+								<td class="efficiency"
+									class:good-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 95}
+									class:mid-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct >= 90 && summary.throwCompletionPct < 95}
+									class:low-eff={summary.throwCompletionPct !== null && summary.throwCompletionPct < 90}
+								>{summary.throwCompletionPct !== null ? summary.throwCompletionPct.toFixed(1) + '%' : '—'}</td>
 								<td>{summary.throwDistYards.toFixed(1)} yds</td>
 							</tr>
 						</tfoot>
