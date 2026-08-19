@@ -394,7 +394,7 @@
 								<th>Turnovers</th>
 								<th>Efficiency</th>
 								<th>Throws</th>
-								<th>Completion %</th>
+								<th>Accuracy %</th>
 								<th>Throw Dist (yds)</th>
 							</tr>
 						</thead>
